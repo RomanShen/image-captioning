@@ -23,7 +23,7 @@ def create_summary_writer(model, data_loader, log_dir):
 
 
 def default_score_fn(engine):
-    score = engine.state.metrics['Accuracy']
+    score = engine.state.metrics['accuracy']
     return score
 
 
