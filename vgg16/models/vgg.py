@@ -1,6 +1,6 @@
 import torch
-from modules import Classifier
-from modules import MyVgg16
+from .modules import Classifier
+from .modules import MyVgg16
 from torch import nn
 
 
