@@ -5,7 +5,7 @@ from torch import nn
 
 
 class Vgg16(nn.Module):
-    def __init__(self, pretrained=False):
+    def __init__(self, pretrained=True):
         super(Vgg16, self).__init__()
         self.vgg = MyVgg16(pretrained=pretrained)
         self.classifier = Classifier()
