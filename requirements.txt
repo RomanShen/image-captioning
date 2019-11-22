@@ -1,3 +1,4 @@
+torchvision
 ignite
 torch
 tb-nightly
