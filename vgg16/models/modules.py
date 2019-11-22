@@ -26,7 +26,8 @@ class Classifier(nn.Module):
             nn.Linear(4096, 512),
             nn.ReLU(inplace=True),
             nn.Dropout(0.4),
-            nn.Linear(512, 45)
+            nn.Linear(512, 45),
+            nn.LogSoftmax(dim=1)
         )
         self._initialize_weights()
 
