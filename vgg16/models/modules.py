@@ -4,7 +4,7 @@ from torchvision.models import vgg16_bn
 
 
 class MyVgg16(nn.Module):
-    def __init__(self, pretrained):
+    def __init__(self, pretrained=True):
         super(MyVgg16, self).__init__()
         vgg16 = vgg16_bn(pretrained=pretrained)
         self.features = vgg16.features
@@ -61,6 +61,7 @@ class VAEDecoder(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.decode = make_decoder_layers()
+        self._initialize_weights()
 
     def forward(self, x):
         mu, logvar = self.encode(x)
