@@ -32,11 +32,11 @@ def run(train_loader, val_loader, epochs, lr, momentum, log_interval, log_dir):
 
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
 
-    trainer = create_supervised_trainer(model, optimizer, F.nll_loss(), device=device)
+    trainer = create_supervised_trainer(model, optimizer, F.nll_loss, device=device)
 
     evaluator = create_supervised_evaluator(model,
                                             metrics={'accuracy': Accuracy(),
-                                                     'nll': Loss(F.nll_loss())},
+                                                     'nll': Loss(F.nll_loss)},
                                             device=device)\
 
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default="./dataset")
     parser.add_argument('--batch_size', type=int, default=48)
     parser.add_argument('--num_epochs', type=int, default=30)
-    parser.add_argument('--lr', type=float, default=1e-3)
+    parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--momentum', type=float, default=0.5,
                         help='SGD momentum (default: 0.5)')
