@@ -113,7 +113,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--data_dir', type=str, default="./dataset")
     parser.add_argument('--batch_size', type=int, default=48)
-    parser.add_argument('--num_epochs', type=int, default=30)
+    parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--momentum', type=float, default=0.8,
