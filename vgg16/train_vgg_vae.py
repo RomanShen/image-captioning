@@ -108,7 +108,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
                      event_name=Events.ITERATION_COMPLETED)
 
     tb_logger.attach(trainer,
-                     log_handler=OptimizerParamsHandler(optimizer, "learning_rate"),
+                     log_handler=OptimizerParamsHandler(optimizer, "lr"),
                      event_name=Events.ITERATION_STARTED)
 
     ProgressBar(persist=True, bar_format="").attach(trainer,
