@@ -121,7 +121,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
             x, y = _prepare_batch(batch, device=device, non_blocking=True)
             output, x_recon, mu, logvar = model(x)
 
-        return output, y,
+        return output, y, x_recon, x, mu, logvar
     val_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
