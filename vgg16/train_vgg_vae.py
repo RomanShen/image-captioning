@@ -90,8 +90,6 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         RunningAverage(output_transform=partial(output_transform, name=n),
                        epoch_bound=False, device=device).attach(trainer, n)
 
-    RunningAverage(output_transform=output_transform, device=device).attach(trainer, "batchloss")
-
     exp_name = datetime.now().strftime("%Y%m%d-%H%M%S")
     log_path = log_dir + "/vgg_vae/{}".format(exp_name)
 
@@ -99,7 +97,6 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
 
     tb_logger.attach(trainer,
                      log_handler=OutputHandler(tag="training",
-                                               output_transform=lambda loss: {'batchloss': loss},
                                                metric_names=metric_names),
                      event_name=Events.ITERATION_COMPLETED)
 
@@ -125,12 +122,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         with torch.no_grad():
             output, x_recon, mu, logvar = model(x)
 
-        # Compute loss
-        loss = criterion(output, y, x_recon, x, mu, logvar)
-
-        return {
-            "batchloss": loss.item(),
-        }
+        return output, y,
     val_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
