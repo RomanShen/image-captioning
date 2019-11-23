@@ -110,9 +110,16 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
     ProgressBar(persist=False, bar_format="").attach(trainer, metric_names=metric_names)
 
     # val process definition
+
+    def acc_output_transform(output):
+        y_pred, y = output[0], output[1]
+        return y_pred, y
+
+    customed_accuracy = Accuracy(acc_output_transform)
+
     metrics = {
         'Loss': Loss(criterion, device=device),
-        'Accuracy': Accuracy(device=device)
+        'Accuracy': customed_accuracy
     }
 
     def val_update_fn(engine, batch):
