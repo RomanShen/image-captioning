@@ -8,6 +8,7 @@ from models.vgg_vae import VggVAE
 from datasets.read_images import ImageNetData
 
 from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch
 from torch import optim
 
@@ -44,9 +45,13 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         device = 'cuda'
     model.to(device)
 
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    # SGD and lr_scheduler for SGD
+    # optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    # lr_scheduler = ExponentialLR(optimizer, gamma=0.975)
 
-    lr_scheduler = ExponentialLR(optimizer, gamma=0.975)
+    # Adam and lr_scheduler for Adam
+    optimizer = optim.Adam(model.parameters(), lr=1e-5, weight_decay=1e-5)
+    lr_scheduler = ReduceLROnPlateau(optimizer, 'min', factor=0.7, patience=2)
 
     criterion = VAELoss(k1=k1, k2=k2).to(device)
 
@@ -77,8 +82,8 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         print("INFO: By default, in this example it is possible to log GPU information (used memory, utilization). "
               "As there is no pynvml python package installed, GPU information won't be logged. Otherwise, please "
               "install it : `pip install pynvml`")
-
-    trainer.add_event_handler(Events.ITERATION_COMPLETED(every=lr_step), lambda engine: lr_scheduler.step())
+    # handler for SGD, if use this, comment handler for Adam in line 152
+    # trainer.add_event_handler(Events.ITERATION_COMPLETED(every=lr_step), lambda engine: lr_scheduler.step())
 
     metric_names = [
         'batchloss',
@@ -103,7 +108,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
                      event_name=Events.ITERATION_COMPLETED)
 
     tb_logger.attach(trainer,
-                     log_handler=OptimizerParamsHandler(optimizer, "lr"),
+                     log_handler=OptimizerParamsHandler(optimizer, "learning_rate"),
                      event_name=Events.ITERATION_STARTED)
 
     ProgressBar(persist=True, bar_format="").attach(trainer,
@@ -144,11 +149,14 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
     trainer.add_event_handler(Events.EPOCH_COMPLETED, run_evaluation)
     trainer.add_event_handler(Events.COMPLETED, run_evaluation)
 
+    # handler for Adam, if use this, comment handler for SGD in line 85
+    val_evaluator.add_event_handler(Events.EPOCH_COMPLETED, lambda engine: lr_scheduler.step(metrics['Loss']))
+
     ProgressBar(persist=False, desc="Train evaluation").attach(val_evaluator)
 
     # Log val metrics:
     tb_logger.attach(val_evaluator,
-                     log_handler=OutputHandler(tag="val",
+                     log_handler=OutputHandler(tag="validation",
                                                metric_names=list(metrics.keys()),
                                                another_engine=trainer),
                      event_name=Events.EPOCH_COMPLETED)
