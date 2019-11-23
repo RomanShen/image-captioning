@@ -68,7 +68,7 @@ class VAEDecoder(nn.Module):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
         z = self.fc4(self.fc3(z)).view(-1, 512, 7, 7)
-        return self.decode(x)
+        return self.decode(z), mu, logvar
 
     def encode(self, x):
         x = x.view(-1, 7 * 7 * 512)
@@ -110,6 +110,6 @@ def make_decoder_layers():
 if __name__ == '__main__':
     model = VAEDecoder()
     output = model(torch.rand(4, 512, 7, 7))
-    print(output.shape)
+    print(output[0].shape)
 
 
