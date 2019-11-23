@@ -138,12 +138,18 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
             x, y = _prepare_batch(batch, device=device, non_blocking=True)
             output, x_recon, mu, logvar = model(x)
             return output, y, x_recon, x, mu, logvar
+
     val_evaluator = Engine(val_update_fn)
+    train_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
         metric.attach(val_evaluator, name)
 
+    for name, metric in metrics.items():
+        metric.attach(train_evaluator, name)
+
     def run_evaluation(engine):
+        train_evaluator.run(train_loader)
         val_evaluator.run(val_loader)
 
     trainer.add_event_handler(Events.EPOCH_COMPLETED, run_evaluation)
@@ -154,11 +160,20 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         val_evaluator.state.metrics['Loss'])
     )
 
-    ProgressBar(persist=False, desc="Train evaluation").attach(val_evaluator)
+    # show training metrics at the end of the progress bar
+    ProgressBar(persist=False, desc="Train evaluation").attach(train_evaluator, metric_names=list(metric.keys))
+    # show validation metrics at the end of the progress bar
+    ProgressBar(persist=False, desc="Validation evaluation").attach(val_evaluator, metric_names=list(metric.keys))
 
     # Log val metrics:
     tb_logger.attach(val_evaluator,
                      log_handler=OutputHandler(tag="validation",
+                                               metric_names=list(metrics.keys()),
+                                               another_engine=trainer),
+                     event_name=Events.EPOCH_COMPLETED)
+
+    tb_logger.attach(train_evaluator,
+                     log_handler=OutputHandler(tag="training",
                                                metric_names=list(metrics.keys()),
                                                another_engine=trainer),
                      event_name=Events.EPOCH_COMPLETED)
@@ -202,7 +217,7 @@ if __name__ == "__main__":
     parser.add_argument('--data_dir', type=str, default="./dataset",
                         help="specify the path of the dataset")
     parser.add_argument('--batch_size', type=int, default=48)
-    parser.add_argument('--epochs', type=int, default=30)
+    parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--momentum', type=float, default=0.8)
     parser.add_argument('--weight_decay', type=float, default=0.001)
