@@ -1,7 +1,7 @@
 import torch
-from modules import Classifier
-from modules import MyVgg16
-from modules import VAEDecoder
+from .modules import Classifier
+from .modules import MyVgg16
+from .modules import VAEDecoder
 from torch import nn
 
 
