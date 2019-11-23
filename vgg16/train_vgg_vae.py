@@ -118,7 +118,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
 
     # val process definition
     def loss_output_transform(output):
-        return output
+        return output[0], output[1], {'recon_x': output[2]}, {'x': output[3]}, {'mu': output[4]}, {'logvar': output[5]}
 
     def acc_output_transform(output):
         y_pred, y = output[0], output[1]
