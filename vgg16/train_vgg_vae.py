@@ -159,9 +159,9 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
     )
 
     # show training metrics at the end of the progress bar
-    ProgressBar(persist=False, desc="Train evaluation").attach(train_evaluator, metric_names=list(metric.keys))
+    ProgressBar(persist=False, desc="Train evaluation").attach(train_evaluator, metric_names=list(metric.keys()))
     # show validation metrics at the end of the progress bar
-    ProgressBar(persist=False, desc="Validation evaluation").attach(val_evaluator, metric_names=list(metric.keys))
+    ProgressBar(persist=False, desc="Validation evaluation").attach(val_evaluator, metric_names=list(metric.keys()))
 
     # Log val metrics:
     tb_logger.attach(val_evaluator,
