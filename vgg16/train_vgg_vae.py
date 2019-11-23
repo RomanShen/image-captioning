@@ -144,8 +144,6 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
 
     for name, metric in metrics.items():
         metric.attach(val_evaluator, name)
-
-    for name, metric in metrics.items():
         metric.attach(train_evaluator, name)
 
     def run_evaluation(engine):
