@@ -56,12 +56,14 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
 
         model.train()
 
+        optimizer.zero_grad()
+
         output = model(x)
 
         # Compute loss
         loss = F.nll_loss(output, y)
 
-        optimizer.zero_grad()
+        loss.backward()
 
         optimizer.step()
 
@@ -115,11 +117,10 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         return output
 
     def acc_output_transform(output):
-        y_pred, y = output[0], output[1]
-        return y_pred, y
+        return output
 
     customed_loss = Loss(loss_fn=F.nll_loss, output_transform=loss_output_transform, device=device)
-    customed_accuracy = Accuracy(acc_output_transform, device=device)
+    customed_accuracy = Accuracy(output_transform=acc_output_transform, device=device)
 
     metrics = {
         'Loss': customed_loss,
@@ -131,8 +132,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         with torch.no_grad():
             x, y = _prepare_batch(batch, device=device, non_blocking=True)
             output = model(x)
-
-        return output, y
+            return output, y
     val_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
