@@ -204,6 +204,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         gc.collect()
     trainer.add_event_handler(Events.EPOCH_COMPLETED, empty_cuda_cache)
     val_evaluator.add_event_handler(Events.COMPLETED, empty_cuda_cache)
+    train_evaluator.add_event_handler(Events.COMPLETED, empty_cuda_cache)
 
     trainer.run(train_loader, max_epochs=epochs)
 
