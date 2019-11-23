@@ -116,10 +116,9 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
     }
 
     def val_update_fn(engine, batch):
-        x, y = _prepare_batch(batch, device=device, non_blocking=True)
-
         model.eval()
         with torch.no_grad():
+            x, y = _prepare_batch(batch, device=device, non_blocking=True)
             output, x_recon, mu, logvar = model(x)
 
         return output, y,
