@@ -150,7 +150,9 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
     trainer.add_event_handler(Events.COMPLETED, run_evaluation)
 
     # handler for Adam, if use this, comment handler for SGD in line 85
-    val_evaluator.add_event_handler(Events.EPOCH_COMPLETED, lambda engine: lr_scheduler.step(metrics['Loss']))
+    val_evaluator.add_event_handler(Events.EPOCH_COMPLETED, lambda engine: lr_scheduler.step(
+        val_evaluator.state.metrics['Loss'])
+    )
 
     ProgressBar(persist=False, desc="Train evaluation").attach(val_evaluator)
 
