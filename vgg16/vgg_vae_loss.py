@@ -2,6 +2,7 @@ from torch import nn
 import torch
 import torch.nn.functional as F
 
+
 class VAELoss(nn.Module):
     def __init__(self, k1=0.1, k2=0.1):
         super(VAELoss, self).__init__()

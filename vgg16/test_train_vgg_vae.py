@@ -4,12 +4,13 @@ from functools import partial
 from datetime import datetime
 
 from vgg_vae_loss import VAELoss
-from models.vgg_vae import VggVAE
+from models.vgg import Vgg16
 from datasets.read_images import ImageNetData
 
 from torch.optim.lr_scheduler import ExponentialLR
 import torch
 from torch import optim
+import torch.nn.functional as F
 
 from ignite.utils import convert_tensor
 from ignite.engine import Engine, Events
@@ -37,7 +38,7 @@ def _prepare_batch(batch, device, non_blocking):
 
 
 def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k1, k2, es_patience, log_dir):
-    model = VggVAE()
+    model = Vgg16()
 
     device = 'cpu'
     if torch.cuda.is_available():
@@ -48,17 +49,17 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
 
     lr_scheduler = ExponentialLR(optimizer, gamma=0.975)
 
-    criterion = VAELoss(k1=k1, k2=k2).to(device)
+    # criterion = VAELoss(k1=k1, k2=k2).to(device)
 
     def update_fn(engine, batch):
         x, y = _prepare_batch(batch, device=device, non_blocking=True)
 
         model.train()
 
-        output, x_recon, mu, logvar = model(x)
+        output = model(x)
 
         # Compute loss
-        loss = criterion(output, y, x_recon, x, mu, logvar)
+        loss = F.nll_loss(output, y)
 
         optimizer.zero_grad()
 
@@ -117,7 +118,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         y_pred, y = output[0], output[1]
         return y_pred, y
 
-    customed_loss = Loss(loss_fn=criterion, output_transform=loss_output_transform, device=device)
+    customed_loss = Loss(loss_fn=F.nll_loss, output_transform=loss_output_transform, device=device)
     customed_accuracy = Accuracy(acc_output_transform, device=device)
 
     metrics = {
@@ -129,9 +130,9 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         model.eval()
         with torch.no_grad():
             x, y = _prepare_batch(batch, device=device, non_blocking=True)
-            output, x_recon, mu, logvar = model(x)
+            output = model(x)
 
-        return output, y, x_recon, x, mu, logvar
+        return output, y
     val_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
