@@ -40,7 +40,7 @@ def main(params):
 
     for i, img in enumerate(imgs):
         # load the image
-        I = skimage.io.imread(os.path.join(params['images_root'], img['filepath'], img['filename']))
+        I = skimage.io.imread(os.path.join(params['images_root'], img['filename']))
         # handle grayscale input images
         if len(I.shape) == 2:
             I = I[:, :, np.newaxis]
