@@ -50,8 +50,8 @@ def main(params):
         I = torch.from_numpy(I.transpose([2, 0, 1])).cuda()
         I = preprocess(I)
         # write to pkl
-        tmp_fc, tmp_att = I, np.random(512)
-        np.save(os.path.join(dir_fc, str(img['imgid'])), tmp_fc.data.cpu().float().numpy())
+        tmp_fc, tmp_att = np.zeros([512]), I
+        np.save(os.path.join(dir_fc, str(img['imgid'])), tmp_fc)
         np.savez_compressed(os.path.join(dir_att, str(img['imgid'])), feat=tmp_att.data.cpu().float().numpy())
 
         if i % 1000 == 0:
