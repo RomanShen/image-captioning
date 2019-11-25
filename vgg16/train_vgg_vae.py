@@ -140,14 +140,14 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
             return output, y, x_recon, x, mu, logvar
 
     val_evaluator = Engine(val_update_fn)
-    train_evaluator = Engine(val_update_fn)
+    # train_evaluator = Engine(val_update_fn)
 
     for name, metric in metrics.items():
-        metric.attach(train_evaluator, name)
+        # metric.attach(train_evaluator, name)
         metric.attach(val_evaluator, name)
 
     def run_evaluation(engine):
-        train_evaluator.run(train_loader)
+        # train_evaluator.run(train_loader)
         val_evaluator.run(val_loader)
 
     trainer.add_event_handler(Events.EPOCH_COMPLETED, run_evaluation)
@@ -170,11 +170,11 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
                                                another_engine=trainer),
                      event_name=Events.EPOCH_COMPLETED)
 
-    tb_logger.attach(train_evaluator,
-                     log_handler=OutputHandler(tag="training",
-                                               metric_names=list(metrics.keys()),
-                                               another_engine=trainer),
-                     event_name=Events.EPOCH_COMPLETED)
+    # tb_logger.attach(train_evaluator,
+    #                  log_handler=OutputHandler(tag="training",
+    #                                            metric_names=list(metrics.keys()),
+    #                                            another_engine=trainer),
+    #                  event_name=Events.EPOCH_COMPLETED)
 
     # trainer.add_event_handler(Events.ITERATION_COMPLETED, TerminateOnNan())
 
@@ -204,7 +204,7 @@ def run(train_loader, val_loader, epochs, lr, momentum, weight_decay, lr_step, k
         gc.collect()
     trainer.add_event_handler(Events.EPOCH_COMPLETED, empty_cuda_cache)
     val_evaluator.add_event_handler(Events.COMPLETED, empty_cuda_cache)
-    train_evaluator.add_event_handler(Events.COMPLETED, empty_cuda_cache)
+    # train_evaluator.add_event_handler(Events.COMPLETED, empty_cuda_cache)
 
     trainer.run(train_loader, max_epochs=epochs)
 
