@@ -8,7 +8,8 @@ class MyVgg16(nn.Module):
         super(MyVgg16, self).__init__()
         vgg16 = vgg16_bn(pretrained=pretrained)
         self.features = vgg16.features
-        self.avgpool = vgg16.avgpool
+        # self.avgpool = vgg16.avgpool
+        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = vgg16.classifier[:6]
 
     def forward(self, x):
