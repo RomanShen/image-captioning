@@ -1,3 +1,5 @@
 .idea
 vgg16/models/__pycache__/
 vgg16/datasets/__pycache__/
+/cider/
+/coco-caption/
