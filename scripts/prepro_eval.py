@@ -8,7 +8,7 @@ img_map = {}
 cap_list = []
 img_list = []
 for i, img in enumerate(imgs):
-    if img['split'] == 'val':
+    if img['split'] == 'val' or img['split'] == 'test':
         img_map['liscense'] = 1
         img_map['file_name'] = img['filename']
         img_map['id'] = img['imgid']
