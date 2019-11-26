@@ -71,13 +71,14 @@ class Encoder(nn.Module):
 
     def __init__(self, layer, N):
         super(Encoder, self).__init__()
+        self.layers = clones(layer, N)
+        self.norm = LayerNorm(layer.size)
 
     def forward(self, x, mask):
         "Pass the input (and mask) through each layer in turn."
-        # for layer in self.layers:
-        #     x = layer(x, mask)
-        # return self.norm(x)
-        return x
+        for layer in self.layers:
+            x = layer(x, mask)
+        return self.norm(x)
 
 
 class LayerNorm(nn.Module):
@@ -133,39 +134,43 @@ class Decoder(nn.Module):
     def __init__(self, layer, N):
         super(Decoder, self).__init__()
         self.layers = clones(layer, N)
-        # self.norm = LayerNorm(layer.size)
-        self.alpha = nn.Parameter(torch.Tensor(6), requires_grad=True)
-        self.gamma = nn.Parameter(torch.Tensor(1, 1), requires_grad=True)
-        torch.nn.init.constant(self.alpha, 1.0)
-        torch.nn.init.constant(self.gamma, 1.0)
-
+        self.norm = LayerNorm(layer.size * 2)
+        # self.alpha = nn.Parameter(torch.Tensor(6), requires_grad=True)
+        # self.gamma = nn.Parameter(torch.Tensor(1, 1), requires_grad=True)
+        # torch.nn.init.constant(self.alpha, 1.0)
+        # torch.nn.init.constant(self.gamma, 1.0)
+        self.dropout = nn.Dropout(p=0.2)
+        # self.fc = nn.Linear(1024, 512)
     def forward(self, x, memory, src_mask, tgt_mask, fc_feats):
         # for layer in self.layers:
         #     x = layer(x, memory, src_mask, tgt_mask)
         # return self.norm(x)
+
         # o_list = []
         # for layer in self.layers:
         #     x, o = layer(x, memory, src_mask, tgt_mask, fc_feats)
         #     o_list.append(o)
         # # return self.norm(x)
         # return self.linear_sum(o_list, self.alpha, self.gamma)
+
         o_list = []
         for layer in self.layers:
             x, o = layer(x, memory, src_mask, tgt_mask, fc_feats)
             o_list.append(o)
-        # return self.norm(x)
-        return self.linear_sum(o_list, self.alpha, self.gamma)
+        # # return self.norm(x)
+        # return self.linear_sum(o_list, self.alpha, self.gamma)
+        feats = torch.cat([o_list[-1], o_list[-2]], dim=2)
+        return self.norm(self.dropout(feats))
 
-
-    def linear_sum(self, x, alpha, gamma):
-        alpha_softmax = F.softmax(alpha)
-        for i in range(len(x)):
-            t = x[i] * alpha_softmax[i] * gamma
-            if i == 0:
-                res = t
-            else:
-                res += t
-        return res
+    # def linear_sum(self, x, alpha, gamma):
+    #     alpha_softmax = F.softmax(alpha)
+    #     for i in range(len(x)):
+    #         t = x[i] * alpha_softmax[i] * gamma
+    #         if i == 0:
+    #             res = t
+    #         else:
+    #             res += t
+    #     return res
 
 
 class DecoderLayer(nn.Module):
@@ -317,13 +322,13 @@ class TransformerModel(AttModel):
         ff = PositionwiseFeedForward(d_model, d_ff, dropout)
         position = PositionalEncoding(d_model, dropout)
         model = EncoderDecoder(
-            Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout), N),
+            Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout), 1),
             Decoder(DecoderLayer(d_model, c(attn), c(attn),
                                  c(ff), dropout), N),
             # nn.Sequential(Embeddings(d_model, src_vocab), c(position)),
             lambda x: x,
             nn.Sequential(Embeddings(d_model, tgt_vocab), c(position)),
-            Generator(d_model, tgt_vocab))
+            Generator(d_model * 2, tgt_vocab))
 
         # This was important from their code.
         # Initialize parameters with Glorot / fan_avg.
