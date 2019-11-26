@@ -23,7 +23,7 @@ def parse_opt():
                                               Note: this file contains absolute paths, be careful when moving files around;
                         'model.ckpt-*'      : file(s) with model definition (created by tf)
                     """)
-    parser.add_argument('--cached_tokens', type=str, default='coco-train-idxs',
+    parser.add_argument('--cached_tokens', type=str, default='/root/PycharmProjects/dataset_rsicd/coco-train-idxs',
                         help='Cached token file for calculating cider score during self critical training.')
     parser.add_argument('--cnn_model', type=str, default='resnet101',
                         help='resnet')

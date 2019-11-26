@@ -143,12 +143,19 @@ class Decoder(nn.Module):
         # for layer in self.layers:
         #     x = layer(x, memory, src_mask, tgt_mask)
         # return self.norm(x)
+        # o_list = []
+        # for layer in self.layers:
+        #     x, o = layer(x, memory, src_mask, tgt_mask, fc_feats)
+        #     o_list.append(o)
+        # # return self.norm(x)
+        # return self.linear_sum(o_list, self.alpha, self.gamma)
         o_list = []
         for layer in self.layers:
             x, o = layer(x, memory, src_mask, tgt_mask, fc_feats)
             o_list.append(o)
         # return self.norm(x)
         return self.linear_sum(o_list, self.alpha, self.gamma)
+
 
     def linear_sum(self, x, alpha, gamma):
         alpha_softmax = F.softmax(alpha)

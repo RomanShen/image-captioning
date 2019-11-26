@@ -138,7 +138,7 @@ if __name__ == "__main__":
                         help='input json file to process into hdf5')
     parser.add_argument('--dict_json', default='/root/PycharmProjects/dataset_rsicd/rsicd.json', help='output json file')
     parser.add_argument('--output_pkl', default='/root/PycharmProjects/dataset_rsicd/coco-all', help='output pickle file')
-    parser.add_argument('--split', default='all', help='test, val, train, all')
+    parser.add_argument('--split', default='train', help='test, val, train, all')
     args = parser.parse_args()
     params = vars(args)  # convert to ordinary dict
 
