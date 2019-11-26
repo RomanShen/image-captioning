@@ -21,6 +21,7 @@ import eval_utils
 import misc.utils as utils
 from misc.rewards import init_scorer, get_self_critical_reward
 from misc.loss_wrapper import LossWrapper
+from create_vgg_extractor import create_extractor
 
 try:
     import tensorboardX as tb
@@ -83,17 +84,18 @@ def train(opt):
     if opt.load_best_score == 1:
         best_val_score = infos.get('best_val_score', None)
 
-    cnn_model = utils.build_cnn(opt)
+    # cnn_model = utils.build_cnn(opt)
+    cnn_model = create_extractor("/root/PycharmProjects/vgg_vae_best_model.pth")
     cnn_model = cnn_model.cuda()
 
     model = models.setup(opt).cuda()
-    # dp_model = torch.nn.DataParallel(model)
+    dp_model = torch.nn.DataParallel(model)
     lw_model = LossWrapper(model, opt)
     dp_lw_model = torch.nn.DataParallel(lw_model)
-
+    # dp_lw_model = lw_model
     epoch_done = True
     # Assure in training mode
-    lw_model.train()
+    dp_lw_model.train()
 
     if opt.noamopt:
         assert opt.caption_model == 'transformer', 'noamopt can only work with transformer'
@@ -109,7 +111,7 @@ def train(opt):
     if opt.finetune_cnn_after != -1:
         # only finetune the layer2 to layer4
         cnn_optimizer = optim.Adam([
-            {'params': module.parameters()} for module in cnn_model._modules.values()[5:]
+            {'params': module.parameters()} for module in cnn_model.finetune_modules
         ], lr=opt.cnn_learning_rate, weight_decay=opt.cnn_weight_decay)
 
     # Load the optimizer
@@ -184,7 +186,7 @@ def train(opt):
                     for p in cnn_model.parameters():
                         p.requires_grad = True
                     # Fix the first few layers:
-                    for module in cnn_model._modules.values()[:5]:
+                    for module in cnn_model.fixed_modules:
                         for p in module.parameters():
                             p.requires_grad = False
                         cnn_model.train()
@@ -214,10 +216,11 @@ def train(opt):
 
             # att_feats 8x672x224
             att_feats = att_feats.view(att_feats.size(0), 3, 224, 224)
-            att_feats = cnn_model(att_feats)
-            fc_feats = att_feats.mean(3).mean(2)
-            att_feats = torch.nn.functional.adaptive_avg_pool2d(
-                att_feats, [7, 7]).permute(0, 2, 3, 1)
+            att_feats, fc_feats = cnn_model(att_feats)
+            # fc_feats = att_feats.mean(3).mean(2)
+            # att_feats = torch.nn.functional.adaptive_avg_pool2d(
+            #     att_feats, [7, 7]).permute(0, 2, 3, 1)
+            att_feats = att_feats.permute(0, 2, 3, 1)
             att_feats = att_feats.view(att_feats.size(0), 49, -1)
 
             att_feats = att_feats.unsqueeze(1).expand(*((att_feats.size(0), opt.seq_per_img,) + att_feats.size(
@@ -291,7 +294,7 @@ def train(opt):
                                'dataset': opt.input_json}
                 eval_kwargs.update(vars(opt))
                 val_loss, predictions, lang_stats = eval_utils.eval_split(
-                    cnn_model, model, lw_model.crit, loader, eval_kwargs)
+                    cnn_model, dp_model, lw_model.crit, loader, eval_kwargs)
 
                 if opt.reduce_on_plateau:
                     if 'CIDEr' in lang_stats:

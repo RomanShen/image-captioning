@@ -71,8 +71,6 @@ class Encoder(nn.Module):
 
     def __init__(self, layer, N):
         super(Encoder, self).__init__()
-        self.layers = clones(layer, N)
-        self.norm = LayerNorm(layer.size)
 
     def forward(self, x, mask):
         "Pass the input (and mask) through each layer in turn."
@@ -135,7 +133,7 @@ class Decoder(nn.Module):
     def __init__(self, layer, N):
         super(Decoder, self).__init__()
         self.layers = clones(layer, N)
-        self.norm = LayerNorm(layer.size)
+        # self.norm = LayerNorm(layer.size)
         self.alpha = nn.Parameter(torch.Tensor(6), requires_grad=True)
         self.gamma = nn.Parameter(torch.Tensor(1, 1), requires_grad=True)
         torch.nn.init.constant(self.alpha, 1.0)

@@ -12,7 +12,7 @@ class VggExtractor(nn.Module):
             vae.vgg.features[-4:],
             vae.vgg.avgpool,
             vae.vgg.classifier,
-            vae.classifier.classifier[:-1],
+            vae.classifier.classifier[:-2],
             nn.Softmax(dim=-1)
         )
         # self.finetune0 = vae.vgg.features[-4:]
@@ -47,8 +47,10 @@ if __name__ == '__main__':
     # pretrained_model = VggVAE(pretrained=False)
     # ex = VggExtractor(pretrained_model)
     ex = create_extractor("/root/PycharmProjects/vgg_vae_best_model.pth")
-    x, y = ex(torch.rand(4, 3, 224, 224))
-    print(x.shape, y.shape)
+    ex.cuda()
+    # ex = nn.DataParallel(ex)
+    # x, y = ex(torch.rand(4, 3, 224, 224))
+    # print(x.shape, y.shape)
     for module in ex.finetune_modules:
         print(module)
         print('*********************************************************')

@@ -31,7 +31,7 @@ def pickle_load(f):
         return cPickle.load(f)
 
 
-def pickle_dump(obj, f, protocol):
+def pickle_dump(obj, f):
     """ Dump a pickle.
     Parameters
     ----------
@@ -167,10 +167,11 @@ def get_lr(optimizer):
 
 
 def clip_gradient(optimizer, grad_clip):
+    # count = 0
     for group in optimizer.param_groups:
         for param in group['params']:
             param.grad.data.clamp_(-grad_clip, grad_clip)
-
+    # print(count, "***********************")
 
 def build_optimizer(params, opt):
     if opt.optim == 'rmsprop':
@@ -326,7 +327,8 @@ def get_std_opt(model, factor=1, warmup=2000):
 def build_cnn(opt):
     net = getattr(resnet, opt.cnn_model)()
     if vars(opt).get('start_from', None) is None and vars(opt).get('cnn_weight', '') != '':
-        net.load_state_dict(torch.load(opt.cnn_weight))
+        # net.load_state_dict(torch.load(opt.cnn_weight))
+        pass
     net = nn.Sequential(
         net.conv1,
         net.bn1,

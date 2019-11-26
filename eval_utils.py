@@ -112,10 +112,11 @@ def eval_split(cnn_model, model, crit, loader, eval_kwargs={}):
 
         with torch.no_grad():
             att_feats = att_feats.view(att_feats.size(0), 3, 224, 224)
-            att_feats = cnn_model(att_feats)
-            fc_feats = att_feats.mean(3).mean(2)
-            att_feats = torch.nn.functional.adaptive_avg_pool2d(
-                att_feats, [7, 7]).permute(0, 2, 3, 1)
+            att_feats, fc_feats = cnn_model(att_feats)
+            # fc_feats = att_feats.mean(3).mean(2)
+            # att_feats = torch.nn.functional.adaptive_avg_pool2d(
+            #     att_feats, [7, 7]).permute(0, 2, 3, 1)
+            att_feats = att_feats.permute(0, 2, 3, 1)
             att_feats = att_feats.view(att_feats.size(0), 49, -1)
 
             att_feats = att_feats.unsqueeze(1).expand(*((att_feats.size(0), 5,) + att_feats.size(
