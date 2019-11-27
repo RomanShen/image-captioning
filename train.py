@@ -88,6 +88,10 @@ def train(opt):
     cnn_model = create_extractor("/root/PycharmProjects/vgg_vae_best_model.pth")
     cnn_model = cnn_model.cuda()
 
+    if vars(opt).get('start_from', None) is not None:
+        cnn_model.load_state_dict(torch.load(os.path.join(opt.start_from, 'model-cnn.pth')))
+        print("load cnn model parameters from {}".format(os.path.join(opt.start_from, 'model-cnn.pth')))
+
     model = models.setup(opt).cuda()
     dp_model = torch.nn.DataParallel(model)
     lw_model = LossWrapper(model, opt)
@@ -108,9 +112,9 @@ def train(opt):
     else:
         optimizer = utils.build_optimizer(model.parameters(), opt)
 
-    if opt.finetune_cnn_after != -1:
-        # only finetune the layer2 to layer4
-        cnn_optimizer = optim.Adam([
+    # if opt.finetune_cnn_after != -1:
+    #     # only finetune the layer2 to layer4
+    cnn_optimizer = optim.Adam([
             {'params': module.parameters()} for module in cnn_model.finetune_modules
         ], lr=opt.cnn_learning_rate, weight_decay=opt.cnn_weight_decay)
 
